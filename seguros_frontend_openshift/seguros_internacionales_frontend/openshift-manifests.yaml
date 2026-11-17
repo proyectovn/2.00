@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seguros-frontend
+  labels:
+    app: seguros-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seguros-frontend
+  template:
+    metadata:
+      labels:
+        app: seguros-frontend
+    spec:
+      containers:
+      - name: seguros-frontend
+        image: image-registry.openshift-image-registry.svc:5000/tu-proyecto/seguros-frontend:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: seguros-frontend-service
+  labels:
+    app: seguros-frontend
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: seguros-frontend
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: seguros-frontend-route
+  labels:
+    app: seguros-frontend
+spec:
+  to:
+    kind: Service
+    name: seguros-frontend-service
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
